@@ -1,5 +1,6 @@
 import { prisma } from "../../config/db";
 import logger from "../../config/logger";
+import upload from "../../middleware/upload";
 import {
   deleteFromCloudinary,
   uploadToCloudinary,
@@ -60,3 +61,49 @@ export const uploadProductImage = async (req, res) => {
     res.status(500).json({ error: "Failed to upload image" });
   }
 };
+
+export const deleteProductImage = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const product = await prisma.product.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    if (!product.imageUrl) {
+      return res.status(400).json({ error: "Product does not have an image" });
+    }
+
+    // Extract public ID from URL and delete from cloudinary
+    const publicIdMatch = product.imageUrl.match(/\/([^\/]+)\.[^.]+$/);
+    if (publicIdMatch) {
+      const publicId = `e-commerce/products/${publicIdMatch[1]}`;
+      await deleteFromCloudinary(publicId);
+    }
+
+    // update product to remove the image URL
+    const updatedProduct = await prisma.product.update({
+      where: { id: parseInt(id) },
+      data: { imageUrl: null },
+    });
+
+    res.status(200).json({
+      message: "Image deleted successfully",
+      product: updatedProduct,
+    });
+
+    logger.info({ productId: id }, "Product image deleted successfully");
+  } catch (error) {
+    logger.error(
+      { err: error, productId: req.params.id },
+      "Failed to delete image",
+    );
+    res.status(500).json({ error: "Failed to delete image" });
+  }
+};
+
+export const uploadMiddleware = upload.single("image");
