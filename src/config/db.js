@@ -4,6 +4,10 @@ import { PrismaClient } from "@prisma/client";
 import { Pool } from "pg";
 import logger from "./logger.js";
 
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL environment variable is required");
+}
+
 // Create PostgreSQL connection pool
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -39,7 +43,7 @@ const disconnectDB = async () => {
     logger.info("Database disconnected successfully");
   } catch (error) {
     logger.error({ err: error }, "Database disconnection failed");
-    process.exit(1);
+    throw error;
   }
 };
 
