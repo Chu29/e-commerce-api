@@ -43,8 +43,10 @@ process.on("unhandledRejection", (reason, promise) => {
 // 2. Handle uncaught exceptions
 process.on("uncaughtException", async (error) => {
   logger.fatal({ err: error }, "Uncaught Exception");
-  await disconnectDB();
-  process.exit(1);
+  server.close(async () => {
+    await disconnectDB();
+    process.exit(1);
+  });
 });
 
 // 3. Handle SIGTERM gracefully
@@ -52,7 +54,9 @@ process.on("SIGTERM", () => {
   logger.info("SIGTERM signal received: closing HTTP server");
   server.close(async () => {
     logger.info("HTTP server closed");
-    await disconnectDB();
-    process.exit(0);
+    server.close(async () => {
+      await disconnectDB();
+      process.exit(0);
+    });
   });
 });
