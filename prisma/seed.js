@@ -2,6 +2,7 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import { Pool } from "pg";
+import logger from "../src/config/logger.js";
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -171,26 +172,26 @@ const products = [
 ];
 
 async function main() {
-  console.log("🌱 Starting database seeding...");
+  logger.info("🌱 Starting database seeding...");
 
   // Clear existing data
-  console.log("🧹 Cleaning existing data...");
+  logger.info("🧹 Cleaning existing data...");
   await prisma.product.deleteMany();
   await prisma.category.deleteMany();
 
   // Seed categories
-  console.log("📦 Seeding categories...");
+  logger.info("📦 Seeding categories...");
   const createdCategories = {};
   for (const category of categories) {
     const created = await prisma.category.create({
       data: category,
     });
     createdCategories[category.slug] = created.id;
-    console.log(`✓ Created category: ${category.name}`);
+    logger.info(`✓ Created category: ${category.name}`);
   }
 
   // Seed products
-  console.log("📦 Seeding products...");
+  logger.info("📦 Seeding products...");
   for (const product of products) {
     const { categorySlug, ...productData } = product;
     await prisma.product.create({
@@ -199,18 +200,18 @@ async function main() {
         categoryId: createdCategories[categorySlug],
       },
     });
-    console.log(`✓ Created product: ${product.name}`);
+    logger.info(`✓ Created product: ${product.name}`);
   }
 
-  console.log("✅ Database seeding completed successfully!");
-  console.log(
+  logger.info("✅ Database seeding completed successfully!");
+  logger.info(
     `📊 Created ${categories.length} categories and ${products.length} products`,
   );
 }
 
 main()
   .catch((error) => {
-    console.error("❌ Seeding failed:", error);
+    logger.error({ err: error }, "❌ Seeding failed");
     process.exit(1);
   })
   .finally(async () => {

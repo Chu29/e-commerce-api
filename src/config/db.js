@@ -2,6 +2,7 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import { Pool } from "pg";
+import logger from "./logger.js";
 
 // Create PostgreSQL connection pool
 const pool = new Pool({
@@ -24,9 +25,9 @@ const prisma = new PrismaClient({
 const connectDB = async () => {
   try {
     await prisma.$connect();
-    console.log("Database connected Successfully");
+    logger.info("Database connected successfully");
   } catch (error) {
-    console.error(`Database connection failed: ${error.message}`);
+    logger.error({ err: error }, "Database connection failed");
     process.exit(1);
   }
 };
@@ -35,9 +36,9 @@ const connectDB = async () => {
 const disconnectDB = async () => {
   try {
     await prisma.$disconnect();
-    console.log("Database disconnected Successfully");
+    logger.info("Database disconnected successfully");
   } catch (error) {
-    console.error(`Database disconnection failed: ${error.message}`);
+    logger.error({ err: error }, "Database disconnection failed");
     process.exit(1);
   }
 };
