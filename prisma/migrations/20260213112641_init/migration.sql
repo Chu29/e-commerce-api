@@ -49,7 +49,6 @@ CREATE INDEX "products_name_idx" ON "products"("name");
 CREATE INDEX "products_is_active_idx" ON "products"("is_active");
 
 -- CreateIndex
-CREATE INDEX "products_sku_idx" ON "products"("sku");
 
 -- AddForeignKey
 ALTER TABLE "products" ADD CONSTRAINT "products_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "Category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
