@@ -1,10 +1,10 @@
-import { prisma } from "../../config/db";
-import logger from "../../config/logger";
-import upload from "../../middleware/upload";
+import { prisma } from "../../config/db.js";
+import logger from "../../config/logger.js";
+import upload from "../../middleware/upload.js";
 import {
   deleteFromCloudinary,
   uploadToCloudinary,
-} from "../../utils/uploadImage";
+} from "../../utils/uploadImage.js";
 
 /**
  * Helper function to extract Cloudinary public ID from image URL
@@ -14,10 +14,24 @@ import {
 const extractPublicId = (imageUrl) => {
   if (!imageUrl) return null;
 
-  const publicIdMatch = imageUrl.match(/\/([^\/]+)\.[^.]+$/);
-  if (!publicIdMatch) return null;
+  try {
+    // Match Cloudinary URL pattern: /upload/[optional transformations]/[optional version]/folder/file.ext
+    // This regex handles URLs with or without transformations and version numbers
+    const match = imageUrl.match(
+      /\/upload\/(?:v\d+\/)?(?:[^/]+\/)*([^/]+\/[^/.]+)/,
+    );
 
-  return `e-commerce/products/${publicIdMatch[1]}`;
+    if (match && match[1]) {
+      return match[1]; // Returns folder/filename without extension
+    }
+
+    // Fallback: try to extract from the end of URL (for simpler formats)
+    const fallbackMatch = imageUrl.match(/([^/]+\/[^/]+)\.[^.]+$/);
+    return fallbackMatch ? fallbackMatch[1] : null;
+  } catch (error) {
+    logger.error({ err: error, imageUrl }, "Failed to extract public ID");
+    return null;
+  }
 };
 
 export const uploadProductImage = async (req, res) => {
@@ -106,7 +120,17 @@ export const deleteProductImage = async (req, res) => {
     // Extract public ID from URL and delete from cloudinary
     const publicId = extractPublicId(product.imageUrl);
     if (publicId) {
-      await deleteFromCloudinary(publicId);
+      try {
+        await deleteFromCloudinary(publicId);
+        logger.info({ publicId, productId }, "Image deleted from Cloudinary");
+      } catch (cloudinaryError) {
+        // Log the error but continue with database update
+        // This ensures we can still remove the URL even if Cloudinary deletion fails
+        logger.warn(
+          { err: cloudinaryError, publicId, productId },
+          "Failed to delete image from Cloudinary, but will update database",
+        );
+      }
     }
 
     // update product to remove the image URL
