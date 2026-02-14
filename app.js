@@ -4,6 +4,8 @@ import pinoHttp from "pino-http";
 import { connectDB, disconnectDB } from "./src/config/db.js";
 import logger from "./src/config/logger.js";
 
+import uploadImageRoute from "./src/modules/image_upload/image.routes.js"
+
 const app = express();
 
 // Request logging middleware
@@ -17,6 +19,9 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => {
   res.json({ message: "E-Commerce API is running" });
 });
+
+// routes
+app.use("/api", uploadImageRoute);
 
 // Initialize server
 let server;
