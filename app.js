@@ -4,7 +4,7 @@ import pinoHttp from "pino-http";
 import { connectDB, disconnectDB } from "./src/config/db.js";
 import logger from "./src/config/logger.js";
 
-import uploadImageRoute from "./src/modules/image_upload/image.routes.js"
+import uploadImageRoute from "./src/modules/image_upload/image.routes.js";
 
 const app = express();
 

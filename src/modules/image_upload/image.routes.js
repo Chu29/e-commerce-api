@@ -8,9 +8,9 @@ import {
 const router = Router();
 
 // upload image route
-router.post("/api/product/:id/image", uploadMiddleware, uploadProductImage);
+router.post("/product/:id/image", uploadMiddleware, uploadProductImage);
 
 // delete image route
-router.delete("/api/product/:id/image", uploadMiddleware, deleteProductImage);
+router.delete("/product/:id/image", deleteProductImage);
 
 export default router;
