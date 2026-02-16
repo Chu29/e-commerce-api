@@ -10,7 +10,7 @@ reviews:
   collapse_walkthrough: false
   auto_review:
     enabled: true
-    drafts: false
+    drafts: true
   path_instructions:
     - path: "**/*.js"
       instructions: "Review JavaScript code for best practices, security, and performance"
