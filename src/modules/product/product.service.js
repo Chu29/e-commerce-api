@@ -35,12 +35,25 @@ const createProduct = async ({
   }
 };
 
-// get product by id
-
 // get all products
+const getAllProducts = async () => {
+  try {
+    const products = await prisma.product.findMany({
+      include: {
+        category: true,
+      },
+    });
+    return products;
+  } catch (error) {
+    logger.error("Error fetching all products:", error);
+    throw error;
+  }
+};
+
+// get product by id
 
 // update product
 
 // delete a product
 
-export { createProduct };
+export { createProduct, getAllProducts };
