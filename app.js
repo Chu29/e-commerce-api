@@ -1,12 +1,17 @@
 import express from "express";
+import cors from "cors";
 import "dotenv/config";
 import pinoHttp from "pino-http";
 import { connectDB, disconnectDB } from "./src/config/db.js";
 import logger from "./src/config/logger.js";
 
 import uploadImageRoute from "./src/modules/image_upload/image.routes.js";
+import createCategoryRoute from "./src/modules/category/category.routes.js";
 
 const app = express();
+
+// setup cors
+app.use(cors());
 
 // Request logging middleware
 app.use(pinoHttp({ logger }));
@@ -22,6 +27,7 @@ app.get("/", (req, res) => {
 
 // routes
 app.use("/api", uploadImageRoute);
+app.use("/api", createCategoryRoute);
 
 // Initialize server
 let server;
