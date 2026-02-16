@@ -1,4 +1,9 @@
-import { createProduct, getAllProducts } from "./product.service.js";
+import logger from "../../config/logger.js";
+import {
+  createProduct,
+  getAllProducts,
+  getProductById,
+} from "./product.service.js";
 
 export const createProductController = async (req, res) => {
   try {
@@ -23,6 +28,32 @@ export const getAllProductsController = async (req, res) => {
     const products = await getAllProducts();
     res.status(200).json({ products });
   } catch (error) {
+    logger.error("Error fetching all products:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getProductByIdController = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (id) {
+      const productId = parseInt(id, 10);
+
+      if (isNaN(productId)) {
+        return res.status(400).json({ error: "Invalid product ID" });
+      }
+      const product = await getProductById(productId);
+
+      if (!product) {
+        return res.status(404).json({ error: "Product not found" });
+      }
+      res
+        .status(200)
+        .json({ message: "Product retrieved successfully", product });
+    }
+  } catch (error) {
+    logger.error("Error fetching product by ID:", error);
     res.status(500).json({ error: error.message });
   }
 };

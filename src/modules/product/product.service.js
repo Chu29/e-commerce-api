@@ -51,9 +51,23 @@ const getAllProducts = async () => {
 };
 
 // get product by id
+const getProductById = async (id) => {
+  try {
+    const product = await prisma.product.findUnique({
+      where: { id },
+      include: {
+        category: true,
+      },
+    });
+    return product;
+  } catch (error) {
+    logger.error("Error fetching product by ID:", error);
+    throw error;
+  }
+};
 
 // update product
 
 // delete a product
 
-export { createProduct, getAllProducts };
+export { createProduct, getAllProducts, getProductById };
