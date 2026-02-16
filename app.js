@@ -7,6 +7,7 @@ import logger from "./src/config/logger.js";
 
 import uploadImageRoute from "./src/modules/image_upload/image.routes.js";
 import createCategoryRoute from "./src/modules/category/category.routes.js";
+import createProductRoute from "./src/modules/product/product.routes.js";
 
 const app = express();
 
@@ -28,7 +29,7 @@ app.get("/", (req, res) => {
 // routes
 app.use("/api", uploadImageRoute);
 app.use("/api", createCategoryRoute);
-
+app.use("/api", createProductRoute);
 // Initialize server
 let server;
 
