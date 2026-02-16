@@ -22,6 +22,8 @@ model Category {
 
   //Relations
   products Product[]
+
+  @@map("categories")
 }
 
 model Product {
