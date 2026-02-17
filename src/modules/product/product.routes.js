@@ -4,6 +4,7 @@ import {
   deleteProductController,
   getAllProductsController,
   getProductByIdController,
+  updateProductController,
 } from "./product.controller.js";
 
 const router = Router();
@@ -18,7 +19,7 @@ router.get("/products", getAllProductsController);
 router.get("/products/:id", getProductByIdController);
 
 // PATCH - Update a product
-router.patch("/products/:id");
+router.patch("/products/:id", updateProductController);
 
 // DELETE - Delete a product
 router.delete("/products/:id", deleteProductController);
