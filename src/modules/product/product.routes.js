@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   createProductController,
+  deleteProductController,
   getAllProductsController,
   getProductByIdController,
 } from "./product.controller.js";
@@ -15,5 +16,11 @@ router.get("/products", getAllProductsController);
 
 // GET - Get product by ID
 router.get("/products/:id", getProductByIdController);
+
+// PATCH - Update a product
+router.patch("/products/:id");
+
+// DELETE - Delete a product
+router.delete("/products/:id", deleteProductController);
 
 export default router;
