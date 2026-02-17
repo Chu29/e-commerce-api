@@ -58,21 +58,19 @@ export const getProductByIdController = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (id) {
-      const productId = parseInt(id, 10);
+    const productId = parseInt(id, 10);
 
-      if (isNaN(productId)) {
-        return res.status(400).json({ error: "Invalid product ID" });
-      }
-      const product = await getProductById(productId);
-
-      if (!product) {
-        return res.status(404).json({ error: "Product not found" });
-      }
-      res
-        .status(200)
-        .json({ message: "Product retrieved successfully", product });
+    if (isNaN(productId)) {
+      return res.status(400).json({ error: "Invalid product ID" });
     }
+    const product = await getProductById(productId);
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+    res
+      .status(200)
+      .json({ message: "Product retrieved successfully", product });
   } catch (error) {
     logger.error("Error fetching product by ID:", error);
     res.status(500).json({ error: error.message });
@@ -157,17 +155,16 @@ export const searchProductsController = async (req, res) => {
 export const deleteProductController = async (req, res) => {
   try {
     const { id } = req.params;
-    if (id) {
-      const productId = parseInt(id, 10);
-      if (isNaN(productId)) {
-        return res.status(400).json({ error: "Invalid product ID" });
-      }
-      const deletedProduct = await deleteProduct(productId);
-      res.status(200).json({
-        message: "Product deleted successfully",
-        product: deletedProduct,
-      });
+
+    const productId = parseInt(id, 10);
+    if (isNaN(productId)) {
+      return res.status(400).json({ error: "Invalid product ID" });
     }
+    const deletedProduct = await deleteProduct(productId);
+    res.status(200).json({
+      message: "Product deleted successfully",
+      product: deletedProduct,
+    });
   } catch (error) {
     logger.error("Error deleting product:", error);
     res.status(500).json({ error: error.message });
