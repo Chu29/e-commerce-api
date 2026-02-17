@@ -50,6 +50,66 @@ const getAllProducts = async () => {
   }
 };
 
+// search and filter products
+const searchProducts = async ({
+  search,
+  categoryId,
+  minPrice,
+  maxPrice,
+  page = 1,
+  limit = 10,
+}) => {
+  try {
+    const where = { isActive: true };
+
+    // search by name or description
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    // filter by category
+    if (categoryId) {
+      where.categoryId = categoryId;
+    }
+
+    // filter by price range
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      where.price = {};
+      if (minPrice !== undefined) where.price.gte = minPrice;
+      if (maxPrice !== undefined) where.price.lte = maxPrice;
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [products, totalCount] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        include: { category: true },
+        skip,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.product.count({ where }),
+    ]);
+
+    return {
+      products,
+      pagination: {
+        total: totalCount,
+        page,
+        limit,
+        totalPages: Math.ceil(totalCount / limit),
+      },
+    };
+  } catch (error) {
+    logger.error("Error searching products:", error);
+    throw error;
+  }
+};
+
 // get product by id
 const getProductById = async (id) => {
   try {
@@ -99,4 +159,5 @@ export {
   getProductById,
   updateProduct,
   deleteProduct,
+  searchProducts,
 };
