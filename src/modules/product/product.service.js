@@ -67,7 +67,30 @@ const getProductById = async (id) => {
 };
 
 // update product
+const updateProduct = async (id, updateData) => {
+  try {
+    const product = await prisma.product.update({
+      where: { id },
+      data: updateData,
+    });
+    return product;
+  } catch (error) {
+    logger.error("Error updating product:", error);
+    throw error;
+  }
+};
 
 // delete a product
+const deleteProduct = async (id) => {
+  try {
+    const product = await prisma.product.delete({
+      where: { id },
+    });
+    return product;
+  } catch (error) {
+    logger.error("Error deleting product:", error);
+    throw error;
+  }
+};
 
-export { createProduct, getAllProducts, getProductById };
+export { createProduct, getAllProducts, getProductById, updateProduct, deleteProduct };
