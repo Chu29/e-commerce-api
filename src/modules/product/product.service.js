@@ -2,7 +2,17 @@ import { prisma } from "../../config/db.js";
 import logger from "../../config/logger.js";
 import { generateUniqueSKU } from "../../utils/skuGenerator.js";
 
-// create new product
+/**
+ * Creates a new product with an auto-generated SKU based on its category.
+ * @param {Object} productData - The product data.
+ * @param {string} productData.name - Product name.
+ * @param {string} [productData.description] - Product description.
+ * @param {number} productData.price - Product price.
+ * @param {number} productData.categoryId - ID of the category the product belongs to.
+ * @param {number} [productData.stockQuantity=0] - Initial stock quantity.
+ * @returns {Promise<Object>} The created product.
+ * @throws {Error} If the category is not found.
+ */
 const createProduct = async ({
   name,
   description,
@@ -35,7 +45,11 @@ const createProduct = async ({
   }
 };
 
-// get all products
+/**
+ * Retrieves all products with their associated categories.
+ * @returns {Promise<Object[]>} Array of products with category data.
+ * @throws {Error} If a database error occurs.
+ */
 const getAllProducts = async () => {
   try {
     const products = await prisma.product.findMany({
@@ -50,7 +64,18 @@ const getAllProducts = async () => {
   }
 };
 
-// search and filter products
+/**
+ * Searches and filters active products with pagination.
+ * @param {Object} filters - Search and filter parameters.
+ * @param {string} [filters.search] - Search term to match against product name or description (case-insensitive).
+ * @param {number} [filters.categoryId] - Filter by category ID.
+ * @param {number} [filters.minPrice] - Minimum price filter.
+ * @param {number} [filters.maxPrice] - Maximum price filter.
+ * @param {number} [filters.page=1] - Page number for pagination.
+ * @param {number} [filters.limit=10] - Number of results per page.
+ * @returns {Promise<{products: Object[], pagination: {total: number, page: number, limit: number, totalPages: number}}>} Paginated product results.
+ * @throws {Error} If a database error occurs.
+ */
 const searchProducts = async ({
   search,
   categoryId,
@@ -110,7 +135,12 @@ const searchProducts = async ({
   }
 };
 
-// get product by id
+/**
+ * Retrieves a single product by its ID, including category data.
+ * @param {number} id - The product ID.
+ * @returns {Promise<Object|null>} The product object or null if not found.
+ * @throws {Error} If a database error occurs.
+ */
 const getProductById = async (id) => {
   try {
     const product = await prisma.product.findUnique({
@@ -126,7 +156,18 @@ const getProductById = async (id) => {
   }
 };
 
-// update product
+/**
+ * Updates a product by its ID with the provided data.
+ * @param {number} id - The product ID.
+ * @param {Object} updateData - Fields to update.
+ * @param {string} [updateData.name] - Updated product name.
+ * @param {string} [updateData.description] - Updated product description.
+ * @param {number} [updateData.price] - Updated price.
+ * @param {number} [updateData.categoryId] - Updated category ID.
+ * @param {number} [updateData.stockQuantity] - Updated stock quantity.
+ * @returns {Promise<Object>} The updated product.
+ * @throws {Error} If the product is not found or a database error occurs.
+ */
 const updateProduct = async (id, updateData) => {
   try {
     const product = await prisma.product.update({
@@ -140,7 +181,12 @@ const updateProduct = async (id, updateData) => {
   }
 };
 
-// delete a product
+/**
+ * Deletes a product by its ID.
+ * @param {number} id - The product ID.
+ * @returns {Promise<Object>} The deleted product.
+ * @throws {Error} If the product is not found or a database error occurs.
+ */
 const deleteProduct = async (id) => {
   try {
     const product = await prisma.product.delete({

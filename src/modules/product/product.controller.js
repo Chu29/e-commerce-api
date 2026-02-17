@@ -8,6 +8,12 @@ import {
   searchProducts,
 } from "./product.service.js";
 
+/**
+ * Handles POST request to create a new product.
+ * @param {import('express').Request} req - Express request object.
+ * @param {import('express').Response} res - Express response object.
+ * @returns {Promise<void>}
+ */
 export const createProductController = async (req, res) => {
   try {
     const { name, description, price, categoryId, stockQuantity } = req.body;
@@ -26,6 +32,12 @@ export const createProductController = async (req, res) => {
   }
 };
 
+/**
+ * Handles GET request to retrieve all products.
+ * @param {import('express').Request} req - Express request object.
+ * @param {import('express').Response} res - Express response object.
+ * @returns {Promise<void>}
+ */
 export const getAllProductsController = async (req, res) => {
   try {
     const products = await getAllProducts();
@@ -36,6 +48,12 @@ export const getAllProductsController = async (req, res) => {
   }
 };
 
+/**
+ * Handles GET request to retrieve a product by its ID.
+ * @param {import('express').Request} req - Express request with `id` param.
+ * @param {import('express').Response} res - Express response object.
+ * @returns {Promise<void>}
+ */
 export const getProductByIdController = async (req, res) => {
   try {
     const { id } = req.params;
@@ -61,6 +79,12 @@ export const getProductByIdController = async (req, res) => {
   }
 };
 
+/**
+ * Handles PATCH request to update an existing product.
+ * @param {import('express').Request} req - Express request with `id` param and update fields in body.
+ * @param {import('express').Response} res - Express response object.
+ * @returns {Promise<void>}
+ */
 export const updateProductController = async (req, res) => {
   try {
     const { id } = req.params;
@@ -89,6 +113,12 @@ export const updateProductController = async (req, res) => {
   }
 };
 
+/**
+ * Handles GET request to search and filter products.
+ * @param {import('express').Request} req - Express request with query params: search, categoryId, minPrice, maxPrice, page, limit.
+ * @param {import('express').Response} res - Express response object.
+ * @returns {Promise<void>}
+ */
 export const searchProductsController = async (req, res) => {
   try {
     const { search, categoryId, minPrice, maxPrice, page, limit } = req.query;
@@ -112,6 +142,12 @@ export const searchProductsController = async (req, res) => {
   }
 };
 
+/**
+ * Handles DELETE request to remove a product by its ID.
+ * @param {import('express').Request} req - Express request with `id` param.
+ * @param {import('express').Response} res - Express response object.
+ * @returns {Promise<void>}
+ */
 export const deleteProductController = async (req, res) => {
   try {
     const { id } = req.params;

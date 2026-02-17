@@ -51,10 +51,11 @@ export const deleteFromCloudinary = async (publicId) => {
 };
 
 /**
- * Get optimized image URL
- * @param {String} publicId - Cloudinary public ID
- * @param {Object} options - Transformation options
- * @returns {String} - Optimized image URL
+ * Generates an optimized Cloudinary image URL with transformations.
+ * @param {string} publicId - Cloudinary public ID.
+ * @param {Object} [options={}] - Transformation options.
+ * @param {Array} [options.transformation] - Custom Cloudinary transformations.
+ * @returns {string} Optimized image URL.
  */
 export const getOptimizedImageUrl = (publicId, options = {}) => {
   return cloudinary.url(publicId, {

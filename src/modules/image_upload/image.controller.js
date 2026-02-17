@@ -34,6 +34,14 @@ const extractPublicId = (imageUrl) => {
   }
 };
 
+/**
+ * Handles POST request to upload or replace a product image.
+ * Uploads the image to Cloudinary and updates the product's imageUrl.
+ * Deletes the previous image from Cloudinary if one exists.
+ * @param {import('express').Request} req - Express request with `id` param and image file.
+ * @param {import('express').Response} res - Express response object.
+ * @returns {Promise<void>}
+ */
 export const uploadProductImage = async (req, res) => {
   try {
     const { id } = req.params;
@@ -95,6 +103,13 @@ export const uploadProductImage = async (req, res) => {
   }
 };
 
+/**
+ * Handles DELETE request to remove a product's image.
+ * Deletes the image from Cloudinary and sets imageUrl to null.
+ * @param {import('express').Request} req - Express request with `id` param.
+ * @param {import('express').Response} res - Express response object.
+ * @returns {Promise<void>}
+ */
 export const deleteProductImage = async (req, res) => {
   try {
     const { id } = req.params;
@@ -154,4 +169,5 @@ export const deleteProductImage = async (req, res) => {
   }
 };
 
+/** Multer middleware configured for single image upload with field name "image". */
 export const uploadMiddleware = upload.single("image");

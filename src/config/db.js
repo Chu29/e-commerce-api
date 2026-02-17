@@ -25,7 +25,11 @@ const prisma = new PrismaClient({
       : ["error"],
 });
 
-// handle db connection
+/**
+ * Connects to the PostgreSQL database via Prisma.
+ * Exits the process with code 1 if the connection fails.
+ * @returns {Promise<void>}
+ */
 const connectDB = async () => {
   try {
     await prisma.$connect();
@@ -36,7 +40,11 @@ const connectDB = async () => {
   }
 };
 
-//handle db disconnect
+/**
+ * Disconnects from the PostgreSQL database.
+ * @returns {Promise<void>}
+ * @throws {Error} If disconnection fails.
+ */
 const disconnectDB = async () => {
   try {
     await prisma.$disconnect();
