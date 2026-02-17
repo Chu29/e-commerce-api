@@ -93,4 +93,10 @@ const deleteProduct = async (id) => {
   }
 };
 
-export { createProduct, getAllProducts, getProductById, updateProduct, deleteProduct };
+export {
+  createProduct,
+  getAllProducts,
+  getProductById,
+  updateProduct,
+  deleteProduct,
+};

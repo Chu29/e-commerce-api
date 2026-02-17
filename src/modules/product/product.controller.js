@@ -97,12 +97,10 @@ export const deleteProductController = async (req, res) => {
         return res.status(400).json({ error: "Invalid product ID" });
       }
       const deletedProduct = await deleteProduct(productId);
-      res
-        .status(200)
-        .json({
-          message: "Product deleted successfully",
-          product: deletedProduct,
-        });
+      res.status(200).json({
+        message: "Product deleted successfully",
+        product: deletedProduct,
+      });
     }
   } catch (error) {
     logger.error("Error deleting product:", error);
