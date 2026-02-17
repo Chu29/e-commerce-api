@@ -5,6 +5,7 @@ import {
   getAllProducts,
   getProductById,
   updateProduct,
+  searchProducts,
 } from "./product.service.js";
 
 export const createProductController = async (req, res) => {
@@ -84,6 +85,29 @@ export const updateProductController = async (req, res) => {
     }
   } catch (error) {
     logger.error("Error updating product:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const searchProductsController = async (req, res) => {
+  try {
+    const { search, categoryId, minPrice, maxPrice, page, limit } = req.query;
+
+    const result = await searchProducts({
+      search,
+      categoryId: categoryId ? parseInt(categoryId, 10) : undefined,
+      minPrice: minPrice ? parseFloat(minPrice) : undefined,
+      maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
+      page: page ? parseInt(page, 10) : 1,
+      limit: limit ? parseInt(limit, 10) : 10,
+    });
+
+    res.status(200).json({
+      message: "Products retrieved successfully",
+      ...result,
+    });
+  } catch (error) {
+    logger.error("Error searching products:", error);
     res.status(500).json({ error: error.message });
   }
 };
