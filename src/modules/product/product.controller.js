@@ -1,6 +1,7 @@
 import logger from "../../config/logger.js";
 import {
   createProduct,
+  deleteProduct,
   getAllProducts,
   getProductById,
   updateProduct,
@@ -76,15 +77,35 @@ export const updateProductController = async (req, res) => {
         categoryId,
         stockQuantity,
       });
-      res
-        .status(200)
-        .json({
-          message: "Product updated successfully",
-          product: updatedProduct,
-        });
+      res.status(200).json({
+        message: "Product updated successfully",
+        product: updatedProduct,
+      });
     }
   } catch (error) {
     logger.error("Error updating product:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const deleteProductController = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (id) {
+      const productId = parseInt(id, 10);
+      if (isNaN(productId)) {
+        return res.status(400).json({ error: "Invalid product ID" });
+      }
+      const deletedProduct = await deleteProduct(productId);
+      res
+        .status(200)
+        .json({
+          message: "Product deleted successfully",
+          product: deletedProduct,
+        });
+    }
+  } catch (error) {
+    logger.error("Error deleting product:", error);
     res.status(500).json({ error: error.message });
   }
 };
