@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import "dotenv/config";
 import pinoHttp from "pino-http";
+import { swaggerSpec } from "./src/config/swagger.js";
+import swaggerUi from "swagger-ui-express";
 import { connectDB, disconnectDB } from "./src/config/db.js";
 import logger from "./src/config/logger.js";
 
@@ -30,6 +32,8 @@ app.get("/", (req, res) => {
 app.use("/api", uploadImageRoute);
 app.use("/api", categoryRoute);
 app.use("/api", productRoute);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 // Initialize server
 let server;
 
