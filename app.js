@@ -6,8 +6,8 @@ import { connectDB, disconnectDB } from "./src/config/db.js";
 import logger from "./src/config/logger.js";
 
 import uploadImageRoute from "./src/modules/image_upload/image.routes.js";
-import createCategoryRoute from "./src/modules/category/category.routes.js";
-import createProductRoute from "./src/modules/product/product.routes.js";
+import categoryRoute from "./src/modules/category/category.routes.js";
+import productRoute from "./src/modules/product/product.routes.js";
 
 const app = express();
 
@@ -28,8 +28,8 @@ app.get("/", (req, res) => {
 
 // routes
 app.use("/api", uploadImageRoute);
-app.use("/api", createCategoryRoute);
-app.use("/api", createProductRoute);
+app.use("/api", categoryRoute);
+app.use("/api", productRoute);
 // Initialize server
 let server;
 
