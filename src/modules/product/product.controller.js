@@ -3,6 +3,7 @@ import {
   createProduct,
   getAllProducts,
   getProductById,
+  updateProduct,
 } from "./product.service.js";
 
 export const createProductController = async (req, res) => {
@@ -54,6 +55,36 @@ export const getProductByIdController = async (req, res) => {
     }
   } catch (error) {
     logger.error("Error fetching product by ID:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const updateProductController = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, price, categoryId, stockQuantity } = req.body;
+
+    if (id) {
+      const productId = parseInt(id, 10);
+      if (isNaN(productId)) {
+        return res.status(400).json({ error: "Invalid product ID" });
+      }
+      const updatedProduct = await updateProduct(productId, {
+        name,
+        description,
+        price,
+        categoryId,
+        stockQuantity,
+      });
+      res
+        .status(200)
+        .json({
+          message: "Product updated successfully",
+          product: updatedProduct,
+        });
+    }
+  } catch (error) {
+    logger.error("Error updating product:", error);
     res.status(500).json({ error: error.message });
   }
 };
