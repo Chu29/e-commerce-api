@@ -95,13 +95,19 @@ export const updateProductController = async (req, res) => {
       if (isNaN(productId)) {
         return res.status(400).json({ error: "Invalid product ID" });
       }
-      const updatedProduct = await updateProduct(productId, {
-        name,
-        description,
-        price,
-        categoryId,
-        stockQuantity,
-      });
+
+      // Only include defined fields in the update object
+      const updateFields = {};
+      if (name !== undefined && name !== null) updateFields.name = name;
+      if (description !== undefined && description !== null)
+        updateFields.description = description;
+      if (price !== undefined && price !== null) updateFields.price = price;
+      if (categoryId !== undefined && categoryId !== null)
+        updateFields.categoryId = categoryId;
+      if (stockQuantity !== undefined && stockQuantity !== null)
+        updateFields.stockQuantity = stockQuantity;
+
+      const updatedProduct = await updateProduct(productId, updateFields);
       res.status(200).json({
         message: "Product updated successfully",
         product: updatedProduct,
