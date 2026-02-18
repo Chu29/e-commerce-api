@@ -64,15 +64,17 @@ startServer();
 process.on("unhandledRejection", (reason, promise) => {
   logger.error({ err: reason, promise }, "Unhandled Rejection");
   if (server) {
-    server.close(async () => {
-      try {
-        await disconnectDB();
-      } catch (dbError) {
-        logger.error(
-          { err: dbError },
-          "Failed to disconnect database during shutdown",
-        );
-      }
+    server.close(() => {
+      async () => {
+        try {
+          await disconnectDB();
+        } catch (dbError) {
+          logger.error(
+            { err: dbError },
+            "Failed to disconnect database during shutdown",
+          );
+        }
+      };
       process.exit(1);
     });
   } else {
@@ -84,15 +86,17 @@ process.on("unhandledRejection", (reason, promise) => {
 process.on("uncaughtException", async (error) => {
   logger.fatal({ err: error }, "Uncaught Exception");
   if (server) {
-    server.close(async () => {
-      try {
-        await disconnectDB();
-      } catch (dbError) {
-        logger.error(
-          { err: dbError },
-          "Failed to disconnect database during shutdown",
-        );
-      }
+    server.close(() => {
+      async () => {
+        try {
+          await disconnectDB();
+        } catch (dbError) {
+          logger.error(
+            { err: dbError },
+            "Failed to disconnect database during shutdown",
+          );
+        }
+      };
       process.exit(1);
     });
   } else {
@@ -104,19 +108,38 @@ process.on("uncaughtException", async (error) => {
 process.on("SIGTERM", () => {
   logger.info("SIGTERM signal received: closing HTTP server");
   if (server) {
-    server.close(async () => {
+    server.close(() => {
       logger.info("HTTP server closed");
-      try {
-        await disconnectDB();
-      } catch (dbError) {
-        logger.error(
-          { err: dbError },
-          "Failed to disconnect database during shutdown",
-        );
-      }
+      async () => {
+        try {
+          await disconnectDB();
+        } catch (dbError) {
+          logger.error(
+            { err: dbError },
+            "Failed to disconnect database during shutdown",
+          );
+        }
+      };
       process.exit(0);
     });
   } else {
     process.exit(0);
+  }
+});
+// 4. Handle SIGINT gracefully
+process.on("SIGINT", () => {
+  if (server) {
+    server.close(() => {
+      async () => {
+        try {
+          await disconnectDB();
+        } catch (error) {
+          logger.error(
+            { err: error },
+            "Failed to disconnect database during shutdown",
+          );
+        }
+      };
+    });
   }
 });
