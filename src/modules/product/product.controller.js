@@ -110,14 +110,11 @@ export const updateProductController = async (req, res) => {
 
     // Only include defined fields in the update object
     const updateFields = {};
-    if (name !== undefined && name !== null) updateFields.name = name;
-    if (description !== undefined && description !== null)
-      updateFields.description = description;
-    if (price !== undefined && price !== null) updateFields.price = price;
-    if (categoryId !== undefined && categoryId !== null)
-      updateFields.categoryId = categoryId;
-    if (stockQuantity !== undefined && stockQuantity !== null)
-      updateFields.stockQuantity = stockQuantity;
+    if (name !== undefined) updateFields.name = name;
+    if (description !== undefined) updateFields.description = description;
+    if (price !== undefined) updateFields.price = price;
+    if (categoryId !== undefined) updateFields.categoryId = categoryId;
+    if (stockQuantity !== undefined) updateFields.stockQuantity = stockQuantity;
 
     const updatedProduct = await updateProduct(productId, updateFields);
     res.status(200).json({
