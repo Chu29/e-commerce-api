@@ -20,16 +20,13 @@ export const createCategoryController = async (req, res, next) => {
       category: newCategory,
     });
   } catch (error) {
+    logger.error("Unexpected error in createCategoryController:", error);
     if (error.status) {
-      res.status(error.status).json({ message: error.message });
+      return res.status(error.status).json({ message: error.message });
     } else {
-      res
+      return res
         .status(500)
         .json({ message: "Error creating category", error: error.message });
     }
   }
-
-  // pass unexpected errors to error handler
-  logger.error("Unexpected error in createCategoryController:", error);
-  next(error);
 };
