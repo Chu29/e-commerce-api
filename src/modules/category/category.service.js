@@ -21,7 +21,7 @@ const createCategory = async ({ name, description, slug }) => {
     });
     return category;
   } catch (error) {
-    logger.error("Error creating category:", error);
+    logger.error({ err: error }, "Error creating category");
     throw error;
   }
 };
@@ -38,12 +38,13 @@ const searchCategories = async (searchTerm) => {
       where: {
         name: {
           contains: searchTerm,
+          mode: "insensitive",
         },
       },
     });
     return categories;
   } catch (error) {
-    logger.error("Error searching categories:", error);
+    logger.error({ err: error }, "Error searching categories");
     throw error;
   }
 };
