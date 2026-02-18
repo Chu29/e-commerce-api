@@ -25,7 +25,9 @@ const createProduct = async ({
       where: { id: categoryId },
     });
     if (!category) {
-      throw new Error("Category not found");
+      const error = new Error("Category not found");
+      error.status = 404;
+      throw error;
     }
     const sku = await generateUniqueSKU(category.slug);
     const product = await prisma.product.create({
