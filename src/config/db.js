@@ -48,6 +48,7 @@ const connectDB = async () => {
 const disconnectDB = async () => {
   try {
     await prisma.$disconnect();
+    await pool.end();
     logger.info("Database disconnected successfully");
   } catch (error) {
     logger.error({ err: error }, "Database disconnection failed");
