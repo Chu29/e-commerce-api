@@ -28,7 +28,12 @@ export const createProductController = async (req, res) => {
       .status(201)
       .json({ message: "Product created successfully", product: newProduct });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      error:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Internal server error",
+    });
   }
 };
 
@@ -44,7 +49,12 @@ export const getAllProductsController = async (req, res) => {
     res.status(200).json({ products });
   } catch (error) {
     logger.error("Error fetching all products:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      error:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Internal server error",
+    });
   }
 };
 
@@ -60,7 +70,7 @@ export const getProductByIdController = async (req, res) => {
 
     const productId = parseInt(id, 10);
 
-    if (isNaN(productId)) {
+    if (!Number.isInteger(productId)) {
       return res.status(400).json({ error: "Invalid product ID" });
     }
     const product = await getProductById(productId);
@@ -73,7 +83,12 @@ export const getProductByIdController = async (req, res) => {
       .json({ message: "Product retrieved successfully", product });
   } catch (error) {
     logger.error("Error fetching product by ID:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      error:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Internal server error",
+    });
   }
 };
 
@@ -88,32 +103,35 @@ export const updateProductController = async (req, res) => {
     const { id } = req.params;
     const { name, description, price, categoryId, stockQuantity } = req.body;
 
-    if (id) {
-      const productId = parseInt(id, 10);
-      if (isNaN(productId)) {
-        return res.status(400).json({ error: "Invalid product ID" });
-      }
-
-      // Only include defined fields in the update object
-      const updateFields = {};
-      if (name !== undefined && name !== null) updateFields.name = name;
-      if (description !== undefined && description !== null)
-        updateFields.description = description;
-      if (price !== undefined && price !== null) updateFields.price = price;
-      if (categoryId !== undefined && categoryId !== null)
-        updateFields.categoryId = categoryId;
-      if (stockQuantity !== undefined && stockQuantity !== null)
-        updateFields.stockQuantity = stockQuantity;
-
-      const updatedProduct = await updateProduct(productId, updateFields);
-      res.status(200).json({
-        message: "Product updated successfully",
-        product: updatedProduct,
-      });
+    const productId = parseInt(id, 10);
+    if (!Number.isInteger(productId)) {
+      return res.status(400).json({ error: "Invalid product ID" });
     }
+
+    // Only include defined fields in the update object
+    const updateFields = {};
+    if (name !== undefined && name !== null) updateFields.name = name;
+    if (description !== undefined && description !== null)
+      updateFields.description = description;
+    if (price !== undefined && price !== null) updateFields.price = price;
+    if (categoryId !== undefined && categoryId !== null)
+      updateFields.categoryId = categoryId;
+    if (stockQuantity !== undefined && stockQuantity !== null)
+      updateFields.stockQuantity = stockQuantity;
+
+    const updatedProduct = await updateProduct(productId, updateFields);
+    res.status(200).json({
+      message: "Product updated successfully",
+      product: updatedProduct,
+    });
   } catch (error) {
     logger.error("Error updating product:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      error:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Internal server error",
+    });
   }
 };
 
@@ -142,7 +160,12 @@ export const searchProductsController = async (req, res) => {
     });
   } catch (error) {
     logger.error("Error searching products:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      error:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Internal server error",
+    });
   }
 };
 
@@ -157,7 +180,7 @@ export const deleteProductController = async (req, res) => {
     const { id } = req.params;
 
     const productId = parseInt(id, 10);
-    if (isNaN(productId)) {
+    if (!Number.isInteger(productId)) {
       return res.status(400).json({ error: "Invalid product ID" });
     }
     const deletedProduct = await deleteProduct(productId);
@@ -167,6 +190,11 @@ export const deleteProductController = async (req, res) => {
     });
   } catch (error) {
     logger.error("Error deleting product:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      error:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Internal server error",
+    });
   }
 };
