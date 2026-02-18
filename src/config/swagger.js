@@ -65,9 +65,9 @@ const options = {
               example: "Latest iPhone model with advanced features.",
             },
             price: {
-              type: "string",
-              description: "Decimal value stored as string",
-              example: "999.99",
+              type: "number",
+              description: "Product price",
+              example: 999.99,
             },
             categoryId: {
               type: "integer",
