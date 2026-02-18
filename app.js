@@ -57,25 +57,28 @@ const startServer = async () => {
 startServer();
 
 /**
- * Let's handle some common edge cases that may occur and cause the application to crash or behave unexpectedly.
+ * Gracefully shuts down the server and database connection.
+ * @param {number} exitCode - The process exit code.
+ * @returns {Promise<void>}
  */
+const gracefulShutdown = async (exitCode) => {
+  try {
+    await disconnectDB();
+  } catch (dbError) {
+    logger.error(
+      { err: dbError },
+      "Failed to disconnect database during shutdown",
+    );
+  }
+  process.exit(exitCode);
+};
 
 // 1. Handle unhandled promise rejections
 process.on("unhandledRejection", (reason, promise) => {
   logger.error({ err: reason, promise }, "Unhandled Rejection");
   if (server) {
     server.close(() => {
-      async () => {
-        try {
-          await disconnectDB();
-        } catch (dbError) {
-          logger.error(
-            { err: dbError },
-            "Failed to disconnect database during shutdown",
-          );
-        }
-      };
-      process.exit(1);
+      gracefulShutdown(1);
     });
   } else {
     process.exit(1);
@@ -83,21 +86,11 @@ process.on("unhandledRejection", (reason, promise) => {
 });
 
 // 2. Handle uncaught exceptions
-process.on("uncaughtException", async (error) => {
+process.on("uncaughtException", (error) => {
   logger.fatal({ err: error }, "Uncaught Exception");
   if (server) {
     server.close(() => {
-      async () => {
-        try {
-          await disconnectDB();
-        } catch (dbError) {
-          logger.error(
-            { err: dbError },
-            "Failed to disconnect database during shutdown",
-          );
-        }
-      };
-      process.exit(1);
+      gracefulShutdown(1);
     });
   } else {
     process.exit(1);
@@ -110,17 +103,7 @@ process.on("SIGTERM", () => {
   if (server) {
     server.close(() => {
       logger.info("HTTP server closed");
-      async () => {
-        try {
-          await disconnectDB();
-        } catch (dbError) {
-          logger.error(
-            { err: dbError },
-            "Failed to disconnect database during shutdown",
-          );
-        }
-      };
-      process.exit(0);
+      gracefulShutdown(0);
     });
   } else {
     process.exit(0);
@@ -130,16 +113,7 @@ process.on("SIGTERM", () => {
 process.on("SIGINT", () => {
   if (server) {
     server.close(() => {
-      async () => {
-        try {
-          await disconnectDB();
-        } catch (error) {
-          logger.error(
-            { err: error },
-            "Failed to disconnect database during shutdown",
-          );
-        }
-      };
+      gracefulShutdown(0);
     });
   }
 });
