@@ -7,6 +7,9 @@ import { prisma } from "../config/db.js";
  * @returns {string} Uppercase 3-character prefix.
  */
 const categoryPrefix = (slug) => {
+  if (!slug || typeof slug !== "string") {
+    throw new Error("Invalid category slug: must be a non-empty string");
+  }
   return slug.substring(0, 3).toUpperCase();
 };
 
@@ -26,17 +29,27 @@ const generateSKU = (prefix) => {
  * @returns {Promise<string>} A unique SKU string.
  */
 const generateUniqueSKU = async (categorySlug) => {
+  const MAX_SKU_ATTEMPTS = 10;
   const prefix = categoryPrefix(categorySlug);
   let sku;
   let isUnique = false;
+  let attempts = 0;
 
   while (!isUnique) {
-    sku = generateSKU(prefix);
-    const existingProduct = await prisma.product.findUnique({
-      where: { sku },
-    });
-    if (!existingProduct) {
-      isUnique = true;
+    while (!isUnique && attempts < MAX_SKU_ATTEMPTS) {
+      attempts++;
+      sku = generateSKU(prefix);
+      const existingProduct = await prisma.product.findUnique({
+        where: { sku },
+      });
+      if (!existingProduct) {
+        isUnique = true;
+      }
+    }
+    if (!isUnique) {
+      throw new Error(
+        `Failed to generate a unique SKU after ${MAX_SKU_ATTEMPTS} attempts`,
+      );
     }
   }
 
