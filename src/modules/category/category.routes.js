@@ -62,7 +62,7 @@ router.post("/categories", createCategoryController);
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Category'
- *        500:
+ *          500:
  *          description: Server error
  *          content:
  *            application/json:
