@@ -1,5 +1,8 @@
 import { Router } from "express";
-import { createCategoryController } from "./category.controller.js";
+import {
+  createCategoryController,
+  getAllCategoriesController,
+} from "./category.controller.js";
 
 const router = Router();
 
@@ -37,5 +40,36 @@ const router = Router();
  */
 // Create new category
 router.post("/categories", createCategoryController);
+
+/**
+ * @swagger
+ * /categories:
+ *   get:
+ *     summary: Retrieve all categories
+ *     tags: [Categories]
+ *     responses:
+ *       200:
+ *         description: Categories retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Categories retrieved successfully"
+ *                 categories:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Category'
+ *        500:
+ *          description: Server error
+ *          content:
+ *            application/json:
+ *              schema:
+ *                $ref: '#/components/schemas/Error'
+ */
+// Get all categories
+router.get("/categories", getAllCategoriesController);
 
 export default router;
