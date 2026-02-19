@@ -38,7 +38,6 @@ const router = Router();
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-// Create new category
 router.post("/categories", createCategoryController);
 
 /**
@@ -62,14 +61,13 @@ router.post("/categories", createCategoryController);
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Category'
- *          500:
- *          description: Server error
- *          content:
- *            application/json:
- *              schema:
- *                $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
-// Get all categories
 router.get("/categories", getAllCategoriesController);
 
 export default router;
