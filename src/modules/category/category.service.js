@@ -49,4 +49,19 @@ const searchCategories = async (searchTerm) => {
   }
 };
 
-export { createCategory, searchCategories };
+/**
+ * Retrieves all categories from the database.
+ * @returns {Promise<Object[]>} Array of all categories.
+ * @throws {Error} If a database error occurs.
+ */
+const getAllCategories = async () => {
+  try {
+    const categories = await prisma.category.findMany();
+    return categories;
+  } catch (error) {
+    logger.error({ err: error }, "Error retrieving all categories");
+    throw error;
+  }
+};
+
+export { createCategory, searchCategories, getAllCategories };
