@@ -9,7 +9,7 @@ const router = Router();
 
 /**
  * @swagger
- * api/product/{id}/image:
+ * /product/{id}/image:
  *   post:
  *     summary: Upload or replace a product image
  *     tags: [Product Images]
@@ -73,7 +73,7 @@ router.post("/product/:id/image", uploadMiddleware, uploadProductImage);
 
 /**
  * @swagger
- * api/product/{id}/image:
+ * /product/{id}/image:
  *   delete:
  *     summary: Delete a product's image
  *     tags: [Product Images]

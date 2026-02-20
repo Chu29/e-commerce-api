@@ -8,7 +8,7 @@ const router = Router();
 
 /**
  * @swagger
- * api/categories:
+ * /categories:
  *   post:
  *     summary: Create a new category
  *     tags: [Categories]
@@ -42,7 +42,7 @@ router.post("/categories", createCategoryController);
 
 /**
  * @swagger
- * api/categories:
+ * /categories:
  *   get:
  *     summary: Retrieve all categories
  *     tags: [Categories]
