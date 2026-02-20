@@ -6,12 +6,33 @@ import { swaggerSpec } from "./src/config/swagger.js";
 import swaggerUi from "swagger-ui-express";
 import { connectDB, disconnectDB } from "./src/config/db.js";
 import logger from "./src/config/logger.js";
+import axios from "axios";
 
 import uploadImageRoute from "./src/modules/image_upload/image.routes.js";
 import categoryRoute from "./src/modules/category/category.routes.js";
 import productRoute from "./src/modules/product/product.routes.js";
 
+const URL = "https://e-commerce-api-mv92.onrender.com";
+const INTERVAL = 60 * 15 * 1000; // 15 minutes interval
+
 const app = express();
+
+const pingRender = () => {
+  axios
+    .get(URL)
+    .then((response) => {
+      logger.info("Render service is alive");
+    })
+    .catch((error) => {
+      logger.error("Failed to ping Render service", error);
+    });
+};
+
+app.use("/ping", (req, res) => res.send({ message: "Service is alive" }));
+
+setInterval(() => {
+  pingRender();
+}, INTERVAL);
 
 // setup cors
 app.use(cors());
