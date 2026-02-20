@@ -12,7 +12,7 @@ const router = Router();
 
 /**
  * @swagger
- * /products:
+ * api/products:
  *   post:
  *     summary: Create a new product
  *     tags: [Products]
@@ -47,7 +47,7 @@ router.post("/products", createProductController);
 
 /**
  * @swagger
- * /products/search:
+ * api/products/search:
  *   get:
  *     summary: Search and filter products
  *     tags: [Products]
@@ -113,7 +113,7 @@ router.get("/products/search", searchProductsController);
 
 /**
  * @swagger
- * /products:
+ * api/products:
  *   get:
  *     summary: Get all products
  *     tags: [Products]
@@ -141,7 +141,7 @@ router.get("/products", getAllProductsController);
 
 /**
  * @swagger
- * /products/{id}:
+ * api/products/{id}:
  *   get:
  *     summary: Get a product by ID
  *     tags: [Products]
@@ -189,7 +189,7 @@ router.get("/products/:id", getProductByIdController);
 
 /**
  * @swagger
- * /products/{id}:
+ * api/products/{id}:
  *   patch:
  *     summary: Update a product
  *     tags: [Products]
@@ -237,7 +237,7 @@ router.patch("/products/:id", updateProductController);
 
 /**
  * @swagger
- * /products/{id}:
+ * api/products/{id}:
  *   delete:
  *     summary: Delete a product
  *     tags: [Products]
