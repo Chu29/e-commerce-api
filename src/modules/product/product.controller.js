@@ -101,7 +101,7 @@ export const getProductByIdController = async (req, res) => {
 export const updateProductController = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, price, categoryId, stockQuantity } = req.body;
+    const { name, description, price, categoryId, stockQuantity, imageUrl } = req.body;
 
     const productId = parseInt(id, 10);
     if (!Number.isInteger(productId)) {
@@ -115,6 +115,7 @@ export const updateProductController = async (req, res) => {
     if (price !== undefined) updateFields.price = price;
     if (categoryId !== undefined) updateFields.categoryId = categoryId;
     if (stockQuantity !== undefined) updateFields.stockQuantity = stockQuantity;
+    if (imageUrl !== undefined) updateFields.imageUrl = imageUrl;
 
     const updatedProduct = await updateProduct(productId, updateFields);
     res.status(200).json({
