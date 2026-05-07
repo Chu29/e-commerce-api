@@ -1,4 +1,5 @@
 import multer from "multer";
+import path from "path";
 
 // Configure multer to use memory storage
 const storage = multer.memoryStorage();
@@ -10,8 +11,17 @@ const storage = multer.memoryStorage();
  * @param {import('multer').FileFilterCallback} cb - Multer callback.
  */
 const fileFilter = (req, file, cb) => {
+  const allowedExt = new Set([
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".gif",
+    ".webp",
+    ".avif",
+  ]);
+  const ext = path.extname(file.originalname).toLowerCase();
   // Accept only image files
-  if (file.mimetype.startsWith("image/")) {
+  if (file.mimetype.startsWith("image/") && allowedExt.has(ext)) {
     cb(null, true);
   } else {
     cb(new Error("Only image files are allowed!"), false);
