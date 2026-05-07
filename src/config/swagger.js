@@ -1,5 +1,7 @@
 import swaggerJSDoc from "swagger-jsdoc";
 
+const API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:3000/api"
+
 const options = {
   definition: {
     openapi: "3.0.0",
@@ -10,7 +12,7 @@ const options = {
     },
     servers: [
       {
-        url: "http://localhost:8080/api",
+        url: API_BASE_URL,
         description: "Local development server",
       },
     ],
@@ -65,9 +67,9 @@ const options = {
               example: "Latest iPhone model with advanced features.",
             },
             price: {
-              type: "number",
+              type: "string",
               description: "Product price",
-              example: 999.99,
+              example: "999.99",
             },
             categoryId: {
               type: "integer",
@@ -169,8 +171,8 @@ const options = {
               example: "Latest iPhone model with advanced features.",
             },
             price: {
-              type: "number",
-              example: 999.99,
+              type: "string",
+              example: "999.99",
             },
             categoryId: {
               type: "integer",
@@ -194,8 +196,8 @@ const options = {
               example: "Updated description.",
             },
             price: {
-              type: "number",
-              example: 899.99,
+              type: "string",
+              example: "899.99",
             },
             categoryId: {
               type: "integer",
