@@ -6,6 +6,20 @@ import {
   uploadToCloudinary,
 } from "../../utils/uploadImage.js";
 
+const parsePositiveInteger = (value) => {
+  const parsedValue = Number(value);
+  return Number.isInteger(parsedValue) && parsedValue > 0
+    ? parsedValue
+    : undefined;
+};
+
+const isMissingRecordError = (error) => error?.code === "P2025";
+
+const isPrismaClientValidationError = (error) =>
+  error?.name === "PrismaClientValidationError";
+
+const uploadSingleImage = upload.single("image");
+
 /**
  * Helper function to extract Cloudinary public ID from image URL
  * @param {string} imageUrl - Cloudinary image URL
@@ -16,18 +30,28 @@ const extractPublicId = (imageUrl) => {
 
   try {
     // Match Cloudinary URL pattern: /upload/[optional transformations]/[optional version]/folder/file.ext
-    // This regex handles URLs with or without transformations and version numbers
-    const match = imageUrl.match(
-      /\/upload\/(?:v\d+\/)?(?:[^/]+\/)*([^/]+\/[^/.]+)/,
-    );
+    // // This regex handles URLs with or without transformations and version numbers
+    // const match = imageUrl.match(
+    //   /\/upload\/(?:v\d+\/)?(?:[^/]+\/)*([^/]+\/[^/.]+)/,
+    // );
 
-    if (match && match[1]) {
-      return match[1]; // Returns folder/filename without extension
-    }
+    // if (match && match[1]) {
+    //   return match[1]; // Returns folder/filename without extension
+    // }
 
-    // Fallback: try to extract from the end of URL (for simpler formats)
-    const fallbackMatch = imageUrl.match(/([^/]+\/[^/]+)\.[^.]+$/);
-    return fallbackMatch ? fallbackMatch[1] : null;
+    // // Fallback: try to extract from the end of URL (for simpler formats)
+    // const fallbackMatch = imageUrl.match(/([^/]+\/[^/]+)\.[^.]+$/);
+    // return fallbackMatch ? fallbackMatch[1] : null;
+    const { pathname } = new URL(imageUrl);
+    const uploadIndex = pathname.indexOf("/upload/");
+    if (uploadIndex === -1) return null;
+
+    const afterUpload = pathname.slice(uploadIndex + 8);
+    const parts = afterUpload.split("/");
+    const versionIdx = parts.findIndex((p) => /^v\d+$/.test(p));
+    const publicIdParts = versionIdx >= 0 ? parts.slice(versionIdx + 1) : parts;
+    const publicIdWithExt = publicIdParts.join("/");
+    return publicIdWithExt.replace(/\.[^/.]+$/, ""); // Remove file extension
   } catch (error) {
     logger.error({ err: error, imageUrl }, "Failed to extract public ID");
     return null;
@@ -47,8 +71,8 @@ export const uploadProductImage = async (req, res) => {
     const { id } = req.params;
 
     // Validate and sanitize id parameter
-    const productId = parseInt(id, 10);
-    if (!Number.isInteger(productId) || productId <= 0) {
+    const productId = parsePositiveInteger(id);
+    if (productId === undefined) {
       return res.status(400).json({ error: "Invalid product id" });
     }
 
@@ -67,14 +91,18 @@ export const uploadProductImage = async (req, res) => {
     }
 
     // delete old image from cloudinary if exists
-    if (product.imageUrl) {
-      const publicId = extractPublicId(product.imageUrl);
-      if (publicId) {
-        await deleteFromCloudinary(publicId).catch((err) =>
-          logger.warn({ err }, "Failed to delete old image"),
-        );
-      }
-    }
+    // if (product.imageUrl) {
+    //   const publicId = extractPublicId(product.imageUrl);
+    //   if (publicId) {
+    //     await deleteFromCloudinary(publicId).catch((err) =>
+    //       logger.warn({ err }, "Failed to delete old image"),
+    //     );
+    //   }
+    // }
+
+    const oldPublicId = product.imageUrl
+      ? extractPublicId(product.imageUrl)
+      : null;
 
     // upload new image to cloudinary
     const newImage = await uploadToCloudinary(req.file.buffer, {
@@ -88,6 +116,13 @@ export const uploadProductImage = async (req, res) => {
       data: { imageUrl: newImage.secure_url },
     });
 
+    // delete old image after successful update
+    if (oldPublicId) {
+      await deleteFromCloudinary(oldPublicId).catch((err) =>
+        logger.warn({ err }, "Failed to delete old image"),
+      );
+    }
+
     res.status(200).json({
       message: "Image updated successfully",
       imageUrl: newImage.secure_url,
@@ -99,7 +134,13 @@ export const uploadProductImage = async (req, res) => {
       { err: error, productId: req.params.id },
       "Failed to upload image",
     );
-    res.status(500).json({ error: "Failed to upload image" });
+    if (isMissingRecordError(error)) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+    if (isPrismaClientValidationError(error)) {
+      return res.status(400).json({ error: "Invalid product id" });
+    }
+    return res.status(500).json({ error: "Failed to upload image" });
   }
 };
 
@@ -115,8 +156,8 @@ export const deleteProductImage = async (req, res) => {
     const { id } = req.params;
 
     // Validate and sanitize id parameter
-    const productId = parseInt(id, 10);
-    if (!Number.isInteger(productId) || productId <= 0) {
+    const productId = parsePositiveInteger(id);
+    if (productId === undefined) {
       return res.status(400).json({ error: "Invalid product id" });
     }
 
@@ -165,9 +206,27 @@ export const deleteProductImage = async (req, res) => {
       { err: error, productId: req.params.id },
       "Failed to delete image",
     );
-    res.status(500).json({ error: "Failed to delete image" });
+    if (isMissingRecordError(error)) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+    if (isPrismaClientValidationError(error)) {
+      return res.status(400).json({ error: "Invalid product id" });
+    }
+    return res.status(500).json({ error: "Failed to delete image" });
   }
 };
 
 /** Multer middleware configured for single image upload with field name "image". */
-export const uploadMiddleware = upload.single("image");
+export const uploadMiddleware = (req, res, next) => {
+  uploadSingleImage(req, res, (error) => {
+    if (!error) return next();
+
+    logger.warn({ err: error }, "Rejected product image upload");
+
+    if (error.code === "LIMIT_FILE_SIZE") {
+      return res.status(400).json({ error: "Image file must be 5MB or less" });
+    }
+
+    return res.status(400).json({ error: error.message });
+  });
+};
