@@ -8,6 +8,48 @@ import {
   searchProducts,
 } from "./product.service.js";
 
+const sendInternalServerError = (res, error) =>
+  res.status(500).json({
+    error:
+      process.env.NODE_ENV === "development"
+        ? error.message
+        : "Internal server error",
+  });
+
+const isMissingRecordError = (error) => error?.code === "P2025";
+
+const isForeignKeyConstraintError = (error) => error?.code === "P2003";
+
+const isPrismaClientValidationError = (error) =>
+  error?.name === "PrismaClientValidationError";
+
+const isBlankValue = (value) =>
+  value === null || (typeof value === "string" && value.trim() === "");
+
+const parsePositiveInteger = (value) => {
+  if (isBlankValue(value)) return undefined;
+  const parsedValue = Number(value);
+  return Number.isInteger(parsedValue) && parsedValue > 0
+    ? parsedValue
+    : undefined;
+};
+
+const parseNonNegativeInteger = (value) => {
+  if (isBlankValue(value)) return undefined;
+  const parsedValue = Number(value);
+  return Number.isInteger(parsedValue) && parsedValue >= 0
+    ? parsedValue
+    : undefined;
+};
+
+const parseNonNegativeNumber = (value) => {
+  if (isBlankValue(value)) return undefined;
+  const parsedValue = Number(value);
+  return Number.isFinite(parsedValue) && parsedValue >= 0
+    ? parsedValue
+    : undefined;
+};
+
 /**
  * Handles POST request to create a new product.
  * @param {import('express').Request} req - Express request object.
@@ -17,23 +59,44 @@ import {
 export const createProductController = async (req, res) => {
   try {
     const { name, description, price, categoryId, stockQuantity } = req.body;
+    if (!name || price === undefined || categoryId === undefined) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    const parsedPrice = parseNonNegativeNumber(price);
+    const parsedCategoryId = parsePositiveInteger(categoryId);
+    const parsedStockQuantity =
+      stockQuantity === undefined
+        ? undefined
+        : parseNonNegativeInteger(stockQuantity);
+
+    if (
+      parsedPrice === undefined ||
+      parsedCategoryId === undefined ||
+      (stockQuantity !== undefined && parsedStockQuantity === undefined)
+    ) {
+      return res.status(400).json({ error: "Invalid product data" });
+    }
+
     const newProduct = await createProduct({
       name,
       description,
-      price,
-      categoryId,
-      stockQuantity,
+      price: parsedPrice,
+      categoryId: parsedCategoryId,
+      stockQuantity: parsedStockQuantity ?? 0,
     });
     res
       .status(201)
       .json({ message: "Product created successfully", product: newProduct });
   } catch (error) {
-    res.status(500).json({
-      error:
-        process.env.NODE_ENV === "development"
-          ? error.message
-          : "Internal server error",
-    });
+    logger.error("Error creating product:", error);
+    if (error.status === 404) {
+      return res.status(404).json({ error: error.message });
+    }
+    if (isPrismaClientValidationError(error)) {
+      return res.status(400).json({ error: "Invalid product data" });
+    }
+    return sendInternalServerError(res, error);
   }
 };
 
@@ -49,12 +112,7 @@ export const getAllProductsController = async (req, res) => {
     res.status(200).json({ products });
   } catch (error) {
     logger.error("Error fetching all products:", error);
-    res.status(500).json({
-      error:
-        process.env.NODE_ENV === "development"
-          ? error.message
-          : "Internal server error",
-    });
+    return sendInternalServerError(res, error);
   }
 };
 
@@ -68,9 +126,9 @@ export const getProductByIdController = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const productId = parseInt(id, 10);
+    const productId = parsePositiveInteger(id);
 
-    if (!Number.isInteger(productId)) {
+    if (productId === undefined) {
       return res.status(400).json({ error: "Invalid product ID" });
     }
     const product = await getProductById(productId);
@@ -83,12 +141,10 @@ export const getProductByIdController = async (req, res) => {
       .json({ message: "Product retrieved successfully", product });
   } catch (error) {
     logger.error("Error fetching product by ID:", error);
-    res.status(500).json({
-      error:
-        process.env.NODE_ENV === "development"
-          ? error.message
-          : "Internal server error",
-    });
+    if (isPrismaClientValidationError(error)) {
+      return res.status(400).json({ error: "Invalid product ID" });
+    }
+    return sendInternalServerError(res, error);
   }
 };
 
@@ -101,10 +157,11 @@ export const getProductByIdController = async (req, res) => {
 export const updateProductController = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, price, categoryId, stockQuantity, imageUrl } = req.body;
+    const { name, description, price, categoryId, stockQuantity, imageUrl } =
+      req.body;
 
-    const productId = parseInt(id, 10);
-    if (!Number.isInteger(productId)) {
+    const productId = parsePositiveInteger(id);
+    if (productId === undefined) {
       return res.status(400).json({ error: "Invalid product ID" });
     }
 
@@ -112,10 +169,32 @@ export const updateProductController = async (req, res) => {
     const updateFields = {};
     if (name !== undefined) updateFields.name = name;
     if (description !== undefined) updateFields.description = description;
-    if (price !== undefined) updateFields.price = price;
-    if (categoryId !== undefined) updateFields.categoryId = categoryId;
-    if (stockQuantity !== undefined) updateFields.stockQuantity = stockQuantity;
     if (imageUrl !== undefined) updateFields.imageUrl = imageUrl;
+    if (price !== undefined) {
+      const parsedPrice = parseNonNegativeNumber(price);
+      if (parsedPrice === undefined) {
+        return res.status(400).json({ error: "Invalid product data" });
+      }
+      updateFields.price = parsedPrice;
+    }
+    if (categoryId !== undefined) {
+      if (categoryId === null) {
+        updateFields.categoryId = null;
+      } else {
+        const parsedCategoryId = parsePositiveInteger(categoryId);
+        if (parsedCategoryId === undefined) {
+          return res.status(400).json({ error: "Invalid product data" });
+        }
+        updateFields.categoryId = parsedCategoryId;
+      }
+    }
+    if (stockQuantity !== undefined) {
+      const parsedStockQuantity = parseNonNegativeInteger(stockQuantity);
+      if (parsedStockQuantity === undefined) {
+        return res.status(400).json({ error: "Invalid product data" });
+      }
+      updateFields.stockQuantity = parsedStockQuantity;
+    }
 
     const updatedProduct = await updateProduct(productId, updateFields);
     res.status(200).json({
@@ -124,12 +203,16 @@ export const updateProductController = async (req, res) => {
     });
   } catch (error) {
     logger.error("Error updating product:", error);
-    res.status(500).json({
-      error:
-        process.env.NODE_ENV === "development"
-          ? error.message
-          : "Internal server error",
-    });
+    if (isMissingRecordError(error)) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+    if (isForeignKeyConstraintError(error)) {
+      return res.status(404).json({ error: "Category not found" });
+    }
+    if (isPrismaClientValidationError(error)) {
+      return res.status(400).json({ error: "Invalid product data" });
+    }
+    return sendInternalServerError(res, error);
   }
 };
 
@@ -143,13 +226,35 @@ export const searchProductsController = async (req, res) => {
   try {
     const { search, categoryId, minPrice, maxPrice, page, limit } = req.query;
 
+    const parsedCategoryId = categoryId
+      ? parsePositiveInteger(categoryId)
+      : undefined;
+    const parsedMinPrice = minPrice
+      ? parseNonNegativeNumber(minPrice)
+      : undefined;
+    const parsedMaxPrice = maxPrice
+      ? parseNonNegativeNumber(maxPrice)
+      : undefined;
+    const parsedPage = page ? parsePositiveInteger(page) : 1;
+    const parsedLimit = limit ? parsePositiveInteger(limit) : 10;
+
+    if (
+      (categoryId && parsedCategoryId === undefined) ||
+      (minPrice && parsedMinPrice === undefined) ||
+      (maxPrice && parsedMaxPrice === undefined) ||
+      parsedPage === undefined ||
+      parsedLimit === undefined
+    ) {
+      return res.status(400).json({ error: "Invalid query parameters" });
+    }
+
     const result = await searchProducts({
       search,
-      categoryId: categoryId ? parseInt(categoryId, 10) : undefined,
-      minPrice: minPrice ? parseFloat(minPrice) : undefined,
-      maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
-      page: page ? parseInt(page, 10) : 1,
-      limit: limit ? parseInt(limit, 10) : 10,
+      categoryId: parsedCategoryId,
+      minPrice: parsedMinPrice,
+      maxPrice: parsedMaxPrice,
+      page: parsedPage,
+      limit: parsedLimit,
     });
 
     res.status(200).json({
@@ -158,12 +263,10 @@ export const searchProductsController = async (req, res) => {
     });
   } catch (error) {
     logger.error("Error searching products:", error);
-    res.status(500).json({
-      error:
-        process.env.NODE_ENV === "development"
-          ? error.message
-          : "Internal server error",
-    });
+    if (isPrismaClientValidationError(error)) {
+      return res.status(400).json({ error: "Invalid query parameters" });
+    }
+    return sendInternalServerError(res, error);
   }
 };
 
@@ -177,8 +280,8 @@ export const deleteProductController = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const productId = parseInt(id, 10);
-    if (!Number.isInteger(productId)) {
+    const productId = parsePositiveInteger(id);
+    if (productId === undefined) {
       return res.status(400).json({ error: "Invalid product ID" });
     }
     const deletedProduct = await deleteProduct(productId);
@@ -188,11 +291,12 @@ export const deleteProductController = async (req, res) => {
     });
   } catch (error) {
     logger.error("Error deleting product:", error);
-    res.status(500).json({
-      error:
-        process.env.NODE_ENV === "development"
-          ? error.message
-          : "Internal server error",
-    });
+    if (isMissingRecordError(error)) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+    if (isPrismaClientValidationError(error)) {
+      return res.status(400).json({ error: "Invalid product ID" });
+    }
+    return sendInternalServerError(res, error);
   }
 };
