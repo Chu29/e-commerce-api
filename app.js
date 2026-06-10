@@ -30,9 +30,11 @@ const pingRender = () => {
 
 app.use("/ping", (req, res) => res.send({ message: "Service is alive" }));
 
-setInterval(() => {
-  pingRender();
-}, INTERVAL);
+if (process.env.NODE_ENV !== "test") {
+  setInterval(() => {
+    pingRender();
+  }, INTERVAL);
+}
 
 // setup cors
 app.use(cors());
@@ -74,8 +76,9 @@ const startServer = async () => {
   }
 };
 
-// Start the server
-startServer();
+if (process.env.NODE_ENV !== "test") {
+  startServer();
+}
 
 /**
  * Gracefully shuts down the server and database connection.
@@ -138,3 +141,5 @@ process.on("SIGINT", () => {
     });
   }
 });
+
+export { app, startServer };

@@ -1,6 +1,6 @@
 import swaggerJSDoc from "swagger-jsdoc";
 
-const API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:3000/api"
+const API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:3000/api";
 
 const options = {
   definition: {
@@ -14,6 +14,10 @@ const options = {
       {
         url: API_BASE_URL,
         description: "Local development server",
+      },
+      {
+        url: "https://e-commerce-api-mv92.onrender.com/api",
+        description: "Production server",
       },
     ],
     components: {

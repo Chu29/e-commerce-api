@@ -8,7 +8,8 @@ const isDevelopment = process.env.NODE_ENV !== "production";
  * - JSON logging in production
  */
 const logger = pino({
-  level: process.env.LOG_LEVEL || "info",
+  level:
+    process.env.LOG_LEVEL || (process.env.NODE_ENV === "test" ? "silent" : "info"),
 
   ...(isDevelopment && {
     transport: {
